@@ -1,0 +1,33 @@
+p {
+  line-height: 1.6;
+}
+
+.container {
+  font-family: sans-serif;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+h1 {
+  color: darkblue;
+}
+
+body {
+  font-family: sans-serif;
+  padding: 2rem;
+}
+
+button {
+  display: block;
+  margin: 10px 0;
+  padding: 10px 15px;
+  cursor: pointer;
+}
+
+#message_area {
+  margin-top: 20px;
+  padding: 15px;
+  border: 1px solid #ccc;
+  background-color: #f0f0f0;
+}

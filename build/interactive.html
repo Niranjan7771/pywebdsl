@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>PyWeb-DSL</title>
+    <link rel="stylesheet" href="styles.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/brython@3.11.2/brython.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/brython@3.11.2/brython_stdlib.js"></script>
+  </head>
+  <body>
+    <body onload="brython()">
+      <h1>Interactive Python Test</h1>
+      <p>These buttons call Python functions that run in the browser.</p>
+      <button onclick="show_alert()">Show an Alert</button>
+      <button onclick="change_content()">Change Text Below</button>
+    </body>
+
+    
+    <script type="text/python">
+from browser import document, alert, console
+
+def show_alert():
+    """Shows a simple browser alert."""
+    alert("Hello from Python, running in your browser!")
+
+def change_content():
+    """Finds an element by ID and changes its text."""
+    # The 'document' object is provided by Brython
+    message_div = document["message_area"]
+    message_div.text = "The content was updated by a Python function."
+    message_div.style.color = "green"
+
+</script>
+  </body>
+</html>

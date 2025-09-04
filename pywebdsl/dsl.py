@@ -1,19 +1,21 @@
-\
+# pywebdsl/dsl.py
+
 """
 pywebdsl.dsl
 ------------
 A tiny Python-embedded DSL to write HTML/CSS using context managers and function calls.
 This runtime records a DOM-like tree and CSS rules during normal Python execution.
 """
-
+import inspect
 from contextlib import contextmanager
 
 class Node:
-    def __init__(self, tag, attrs=None, text=None):
+    def __init__(self, tag, attrs=None, text=None, event_handlers=None):
         self.tag = tag
         self.attrs = attrs or {}
         self.text = text
         self.children = []
+        self.event_handlers = event_handlers or {} # NEW: Store event handlers
 
     def append(self, child):
         self.children.append(child)
@@ -33,18 +35,26 @@ class HTMLNamespace:
     _stack = []
     # A list of top-level nodes (commonly you'll start with body/html)
     _roots = []
+    # NEW: A set to store all functions used as event handlers
+    _event_scripts = set()
+
 
     # Default known singleton tags to support as leaf calls
     _known_tags = {
         "html", "head", "body",
         "div", "span", "p", "h1", "h2", "h3", "ul", "li",
         "a", "img", "section", "article", "header", "footer",
-        "button", "input", "label"
+        "button", "input", "label", "script"
+    }
+    # NEW: Known event handler attributes
+    _event_attrs = {
+        "onclick", "onsubmit", "oninput", "onchange", "onmouseover", "onload"
     }
 
     def reset(self):
         self._stack.clear()
         self._roots.clear()
+        self._event_scripts.clear()
 
     def _normalize_attrs(self, attrs):
         # Allow class_ to map to class for Python keyword compatibility
@@ -63,8 +73,19 @@ class HTMLNamespace:
             text = None
             if args and isinstance(args[0], str):
                 text = args[0]
+            
+            # NEW: Separate event handlers from regular attributes
+            event_handlers = {}
+            regular_attrs = {}
+            for k, v in kwargs.items():
+                if k in self._event_attrs and callable(v):
+                    event_handlers[k] = v
+                    self._event_scripts.add(v)
+                else:
+                    regular_attrs[k] = v
 
-            node = Node(tag, attrs=kwargs, text=text)
+
+            node = Node(tag, attrs=regular_attrs, text=text, event_handlers=event_handlers)
 
             # If we're inside a context, append to current parent; else treat as root or leaf
             if self._stack:
@@ -103,6 +124,11 @@ class HTMLNamespace:
     @property
     def roots(self):
         return list(self._roots)
+
+    # NEW: Property to access the collected event handler functions
+    @property
+    def event_scripts(self):
+        return list(self._event_scripts)
 
 
 class CSSNamespace:
